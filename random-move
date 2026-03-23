@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
 
 hide_dest=false
+rename=false
 file=""
 for arg in "$@"; do
   case "$arg" in
     -h|--hide-dest) hide_dest=true ;;
+    -r|--rename) rename=true ;;
     -*)
       echo "unknown option: $arg" >&2
-      echo "usage: random-move <file> [-e|--hide-dest]" >&2
+      echo "usage: random-move <file> [-h|--hide-dest] [-r|--rename]" >&2
       exit 1
       ;;
     *)
       if [[ -n "$file" ]]; then
-        echo "usage: random-move <file> [-e|--hide-dest]" >&2
+        echo "usage: random-move <file> [-h|--hide-dest] [-r|--rename]" >&2
         exit 1
       fi
       file=$arg
@@ -21,7 +23,7 @@ for arg in "$@"; do
 done
 
 if [[ -z "$file" ]]; then
-  echo "usage: random-move <file> [-e|--hide-dest]" >&2
+  echo "usage: random-move <file> [-h|--hide-dest] [-r|--rename]" >&2
   exit 1
 fi
 
@@ -62,11 +64,39 @@ while true; do
   walked=true
 done
 
-mv -- "$src" . || exit 1
+dest_name=$(basename -- "$src")
+if [[ "$rename" == true ]]; then
+  base=$dest_name
+  if [[ "$base" == *.* ]]; then
+    ext=".${base##*.}"
+  else
+    ext=""
+  fi
+  while true; do
+    if command -v openssl >/dev/null 2>&1; then
+      id=$(openssl rand -hex 8)
+    else
+      id=$(printf '%08x%08x' "$RANDOM" "$RANDOM")
+    fi
+    dest_name="${id}${ext}"
+    [[ ! -e "$dest_name" ]] && break
+  done
+fi
 
-if [[ "$hide_dest" == true ]]; then
-  echo "success: moved to ???"
+mv -- "$src" "./$dest_name" || exit 1
+
+if [[ "$rename" == true ]]; then
+  if [[ "$hide_dest" == true ]]; then
+    echo "success: moved to ??? and renamed"
+  else
+    loc=$(realpath -- "$dest_name")
+    echo "success: moved to $(dirname -- "$loc") and renamed"
+  fi
 else
-  dest=$(realpath -- "$(basename -- "$src")")
-  echo "success: moved to $dest"
+  if [[ "$hide_dest" == true ]]; then
+    echo "success: moved to ???"
+  else
+    loc=$(realpath -- "$dest_name")
+    echo "success: moved to $loc"
+  fi
 fi

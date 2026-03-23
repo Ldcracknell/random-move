@@ -6,6 +6,10 @@ bash script that moves your file to a random folder under your current dir
 use -h or --hide-dest to hide the new file location from you
 ![hidden image](assets/hidden.png)
 
+and use -r or --rename to rename the file
+![hidden image](assets/rename_and_hide.png)
+
+
 ## add to your terminal
 
 From the repo directory:
