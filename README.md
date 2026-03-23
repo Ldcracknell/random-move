@@ -1,10 +1,10 @@
 # random-move
 
 bash script that moves your file to a random folder under your current dir
-![example image](example.png)
+![example image](assets/example.png)
 
 use -h or --hide-dest to hide the new file location from you
-![hidden image](hidden.png)
+![hidden image](assets/hidden.png)
 
 ## add to your terminal
 
