@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+if [[ -z "$1" ]]; then
+  echo "usage: random-move <file>" >&2
+  exit 1
+fi
+
+if [[ ! -f "$1" ]]; then
+  echo "$1 is not a file" >&2
+  exit 1
+fi
+
+src=$(realpath -- "$1")
+
+walked=false
+while true; do
+  dirs=()
+  for name in *; do
+    [[ -d "$name" ]] && dirs+=("$name")
+  done
+
+  n=${#dirs[@]}
+
+  if ((n == 0)); then
+    if [[ "$walked" != true ]]; then
+      echo "no subdirectories here (need at least one folder step)" >&2
+      exit 1
+    fi
+    break
+  fi
+
+  if [[ "$walked" == true ]]; then
+    idx=$((RANDOM % (n + 1)))
+    if ((idx == n)); then
+      break
+    fi
+  else
+    idx=$((RANDOM % n))
+  fi
+
+  cd -- "${dirs[idx]}" || exit 1
+  walked=true
+done
+
+mv -- "$src" . || exit 1
+
+dest=$(realpath -- "$(basename -- "$src")")
+echo "success: moved to $dest"
